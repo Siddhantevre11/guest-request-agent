@@ -2,8 +2,20 @@
 
 import { useEffect, useState } from "react";
 
-type Approval = { id: string; booking_id: string; change: Record<string, unknown>; status: string };
+type Approval = {
+  id: string;
+  booking_id: string;
+  guest_message: string;
+  change: Record<string, unknown>;
+  status: string;
+};
 type Escalation = { id: string; guest_id: string; reason: string };
+
+function formatChange(change: Record<string, unknown>): string {
+  return Object.entries(change)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join(", ");
+}
 
 export function HostDashboard() {
   const [approvals, setApprovals] = useState<Approval[]>([]);
@@ -34,7 +46,9 @@ export function HostDashboard() {
         <ul>
           {approvals.map((approval) => (
             <li key={approval.id}>
-              {approval.booking_id}
+              <p>{approval.booking_id}</p>
+              <p>Guest asked: &ldquo;{approval.guest_message}&rdquo;</p>
+              <p>Proposed change: {formatChange(approval.change)}</p>
               <button onClick={() => decide(approval.id, "approve")}>Approve</button>
               <button onClick={() => decide(approval.id, "deny")}>Deny</button>
             </li>

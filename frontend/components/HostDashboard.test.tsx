@@ -31,6 +31,30 @@ describe("HostDashboard", () => {
     expect(await screen.findByText("Needs manual review")).toBeInTheDocument();
   });
 
+  it("shows the guest's actual message and the proposed change details, not just the booking id", async () => {
+    vi.stubGlobal(
+      "fetch",
+      mockFetchByUrl({
+        "/host/approvals": [
+          {
+            id: "APR-1",
+            booking_id: "BK-1001",
+            guest_message: "can I check out at 1pm instead of 11am on my last day?",
+            change: { new_checkout_time: "13:00", fee: 25, date: "2026-08-05" },
+            status: "pending",
+          },
+        ],
+        "/host/escalations": [],
+      }),
+    );
+
+    render(<HostDashboard />);
+
+    expect(await screen.findByText(/can i check out at 1pm instead of 11am on my last day/i)).toBeInTheDocument();
+    expect(screen.getByText(/13:00/)).toBeInTheDocument();
+    expect(screen.getByText(/25/)).toBeInTheDocument();
+  });
+
   it("approving an item calls the decision endpoint and removes it from the queue", async () => {
     const fetchMock = mockFetchByUrl({
       "/host/approvals": [{ id: "APR-1", booking_id: "BK-1001", change: {}, status: "pending" }],

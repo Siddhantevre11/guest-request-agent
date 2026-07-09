@@ -78,6 +78,7 @@ def build_graph(llm: LLMClient, booking_lookup: BookingLookupFn):
                         conversation_id=state["conversation_id"],
                         booking_id=booking["booking_id"],
                         change=change,
+                        guest_message=state["message"],
                     )
                     facts.append(BOOKING_CHANGE_PENDING_MESSAGE)
                 else:
@@ -107,6 +108,7 @@ def build_graph(llm: LLMClient, booking_lookup: BookingLookupFn):
                         conversation_id=state["conversation_id"],
                         booking_id=booking["booking_id"],
                         change={"type": "add_gap_night", "date": gap_date, "price": price},
+                        guest_message=state["message"],
                     )
                     facts.append(BOOKING_CHANGE_PENDING_MESSAGE)
                 elif len(pending_dates) > 1:
