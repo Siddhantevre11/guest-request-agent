@@ -17,12 +17,13 @@ An agent that reads inbound short-term-rental guest messages, figures out what e
 ```
 cd backend
 .venv/Scripts/python.exe -m pip install -r requirements.txt   # first time
-.venv/Scripts/python.exe -m pytest                             # 23 tests
+.venv/Scripts/python.exe -m pytest                             # 25 tests
+export OPENAI_API_KEY=sk-...                                   # real classify()/draft() calls
+.venv/Scripts/python.exe -m uvicorn app.server:app --reload
 ```
-Note: `create_app(llm_client)` requires an `LLMClient` implementation. Tests supply the
-stub `FakeLLMClient`; a concrete OpenAI-backed `LLMClient` (for `classify`/`draft`) hasn't
-been built yet, so there's no `uvicorn` entrypoint to serve real traffic through yet —
-that's the next backend slice, not part of this TDD pass.
+`app/server.py` wires the real `OpenAILLMClient` (backed by `langchain_openai.ChatOpenAI`)
+into `create_app`. Tests never hit the real API — they inject a stub at the same seam
+(`FakeLLMClient`, or a fake chat-model object for `OpenAILLMClient` itself).
 
 **Frontend** (Next.js — guest chat at `/`, host dashboard at `/host`):
 ```
