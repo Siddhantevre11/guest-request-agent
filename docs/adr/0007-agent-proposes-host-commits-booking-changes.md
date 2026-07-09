@@ -1,0 +1,5 @@
+# Agent proposes booking changes; host commits
+
+A booking change ("can I check out late?") is the sharpest case of "deterministic code decides anything with consequences" — even when availability checks out, the change may carry a fee, affect turnover/cleaning, or conflict with host preferences not present in the data. We decided the agent never mutates a booking autonomously. It does all the tedious work (reads the message, resolves the booking, verifies availability, drafts the proposed change) and hands the host a single one-click yes/no. The guest-facing reply is honest and fast: "checking with your host, they'll confirm shortly." This is the same non-blocking handoff shape as escalation — the host's approval is a later follow-up, not part of the turn's latency budget.
+
+Future evolution (spoken, not built): a host-configured policy engine could auto-approve low-risk changes within preset rules (e.g. late checkout under 2h when the next day is empty). That requires a real policy subsystem and is deferred to production.

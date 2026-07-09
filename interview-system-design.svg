@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1000" viewBox="0 0 1200 1000" font-family="'Comic Sans MS', 'Segoe Print', 'Bradley Hand', cursive">
+  <style>
+    .box{fill:#fff;stroke:#1e1e1e;stroke-width:2.5;}
+    .llm{fill:#d0e8ff;stroke:#1971c2;stroke-width:2.5;}
+    .det{fill:#d3f9d8;stroke:#2f9e44;stroke-width:2.5;}
+    .human{fill:#ffd8d8;stroke:#e03131;stroke-width:2.5;}
+    .mem{fill:#fff3bf;stroke:#f08c00;stroke-width:2.5;}
+    .store{fill:#f3d9fa;stroke:#9c36b5;stroke-width:2.5;}
+    .term{fill:#e9ecef;stroke:#495057;stroke-width:2.5;}
+    .lbl{font-size:15px;fill:#1e1e1e;font-weight:700;}
+    .sub{font-size:11.5px;fill:#495057;font-family:'Segoe UI',sans-serif;}
+    .arrow{stroke:#1e1e1e;stroke-width:2.2;fill:none;marker-end:url(#h);}
+    .arrowr{stroke:#e03131;stroke-width:2.2;fill:none;marker-end:url(#hr);stroke-dasharray:6 4;}
+    .arrowm{stroke:#f08c00;stroke-width:2.2;fill:none;marker-end:url(#hm);stroke-dasharray:6 4;}
+    .title{font-size:24px;fill:#1e1e1e;font-weight:700;}
+    .edge{font-size:11px;fill:#e03131;font-weight:700;font-family:'Segoe UI',sans-serif;}
+    .edgek{font-size:11px;fill:#1e1e1e;font-weight:700;font-family:'Segoe UI',sans-serif;}
+    .edgem{font-size:11px;fill:#f08c00;font-weight:700;font-family:'Segoe UI',sans-serif;}
+    .note{font-size:12px;fill:#2f9e44;font-weight:700;font-family:'Segoe UI',sans-serif;}
+    .prod{font-size:11px;fill:#9c36b5;font-weight:700;font-family:'Segoe UI',sans-serif;}
+  </style>
+  <defs>
+    <marker id="h" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#1e1e1e"/></marker>
+    <marker id="hr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#e03131"/></marker>
+    <marker id="hm" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#f08c00"/></marker>
+  </defs>
+
+  <text x="40" y="44" class="title">Guest Request Agent — Query Flow</text>
+
+  <!-- Legend -->
+  <rect x="770" y="24" width="15" height="15" class="llm" rx="3"/>
+  <text x="790" y="36" class="sub">LLM (edges only)</text>
+  <rect x="770" y="44" width="15" height="15" class="det" rx="3"/>
+  <text x="790" y="56" class="sub">Deterministic / DB-backed</text>
+  <rect x="985" y="24" width="15" height="15" class="human" rx="3"/>
+  <text x="1005" y="36" class="sub">Human / clarify</text>
+  <rect x="985" y="44" width="15" height="15" class="store" rx="3"/>
+  <text x="1005" y="56" class="sub">Prod infra (spoken, not built)</text>
+
+  <!-- Guest -->
+  <rect x="60" y="95" width="200" height="56" class="term" rx="12"/>
+  <text x="160" y="120" text-anchor="middle" class="lbl">Guest message</text>
+  <text x="160" y="139" text-anchor="middle" class="sub">"can I check out late + wifi?"</text>
+  <path class="arrow" d="M260,123 L320,123"/>
+
+  <!-- NODE 1: Classify -->
+  <rect x="320" y="90" width="240" height="66" class="llm" rx="12"/>
+  <text x="440" y="112" text-anchor="middle" class="lbl">① Classify intent</text>
+  <text x="440" y="130" text-anchor="middle" class="sub">LLM → structured output</text>
+  <text x="440" y="146" text-anchor="middle" class="sub">{intent[], confidence}</text>
+
+  <!-- low confidence -> clarify/escalate -->
+  <path class="arrowr" d="M560,110 L690,110"/>
+  <text x="575" y="102" class="edge">confidence &lt; 0.5</text>
+  <rect x="690" y="85" width="230" height="60" class="human" rx="12"/>
+  <text x="805" y="108" text-anchor="middle" class="lbl">Clarify / Escalate</text>
+  <text x="805" y="126" text-anchor="middle" class="sub">ask guest OR hand to human</text>
+  <text x="930" y="118" class="note">ambiguous ≠ retry —</text>
+  <text x="930" y="134" class="note">re-running gives same answer</text>
+
+  <path class="arrow" d="M440,156 L440,200"/>
+  <text x="452" y="182" class="edgek">confident</text>
+
+  <!-- NODE 2: Route + handle -->
+  <rect x="290" y="200" width="300" height="150" class="box" rx="12"/>
+  <text x="440" y="224" text-anchor="middle" class="lbl">② Route + handle  (loop multi-intent)</text>
+  <rect x="310" y="238" width="120" height="44" class="det" rx="8"/>
+  <text x="370" y="264" text-anchor="middle" class="lbl">booking</text>
+  <rect x="310" y="290" width="120" height="44" class="det" rx="8"/>
+  <text x="370" y="316" text-anchor="middle" class="lbl">property</text>
+  <rect x="450" y="264" width="120" height="44" class="det" rx="8"/>
+  <text x="510" y="290" text-anchor="middle" class="lbl">upsell</text>
+  <text x="300" y="236" class="sub"></text>
+
+  <!-- tools/MCP -->
+  <path class="arrow" d="M590,275 L650,275"/>
+  <text x="595" y="267" class="edgek">tool calls</text>
+  <rect x="650" y="235" width="230" height="80" class="det" rx="12"/>
+  <text x="765" y="258" text-anchor="middle" class="lbl">Tools (MCP server)</text>
+  <text x="765" y="276" text-anchor="middle" class="sub">lookup_booking · check_avail</text>
+  <text x="765" y="292" text-anchor="middle" class="sub">find_upsell · answer_from_notes</text>
+  <text x="765" y="308" text-anchor="middle" class="sub">→ read from real data, LLM can't invent</text>
+
+  <!-- retry on tool failure -->
+  <path class="arrowr" d="M880,265 L940,265"/>
+  <text x="885" y="257" class="edge">fails</text>
+  <rect x="940" y="240" width="210" height="52" class="human" rx="12"/>
+  <text x="1045" y="262" text-anchor="middle" class="lbl">Retry ×3 → escalate</text>
+  <text x="1045" y="280" text-anchor="middle" class="sub">transient failure = retry here</text>
+
+  <path class="arrow" d="M440,350 L440,395"/>
+
+  <!-- NODE 3: consolidate + verify -->
+  <rect x="300" y="395" width="280" height="70" class="det" rx="12"/>
+  <text x="440" y="419" text-anchor="middle" class="lbl">③ Consolidate + verify</text>
+  <text x="440" y="438" text-anchor="middle" class="sub">merge handler results, prioritize,</text>
+  <text x="440" y="454" text-anchor="middle" class="sub">re-check facts against DB</text>
+
+  <path class="arrow" d="M440,465 L440,510"/>
+
+  <!-- NODE 4: draft + memory -->
+  <rect x="300" y="510" width="280" height="70" class="llm" rx="12"/>
+  <text x="440" y="534" text-anchor="middle" class="lbl">④ Draft response  (LLM)</text>
+  <text x="440" y="553" text-anchor="middle" class="sub">natural guest-facing reply</text>
+  <text x="440" y="569" text-anchor="middle" class="sub">from verified facts only</text>
+
+  <!-- memory -->
+  <path class="arrowm" d="M580,545 L650,545"/>
+  <rect x="650" y="518" width="200" height="54" class="mem" rx="12"/>
+  <text x="750" y="541" text-anchor="middle" class="lbl">Memory (per guest)</text>
+  <text x="750" y="559" text-anchor="middle" class="sub">save context for next msg</text>
+  <path class="arrowm" d="M750,518 L750,123 L560,123" stroke-dasharray="6 4"/>
+  <text x="600" y="500" class="edgem">next message loads history</text>
+
+  <path class="arrow" d="M440,580 L440,620"/>
+  <rect x="340" y="620" width="200" height="52" class="term" rx="12"/>
+  <text x="440" y="652" text-anchor="middle" class="lbl">Response to guest</text>
+
+  <!-- BOUNDARY callout -->
+  <line x1="40" y1="710" x2="1160" y2="710" stroke="#adb5bd" stroke-width="1.5" stroke-dasharray="4 4"/>
+  <text x="40" y="740" class="lbl" fill="#1971c2">The two boundaries to say out loud:</text>
+  <text x="60" y="765" class="note">① LLM vs deterministic — LLM classifies &amp; drafts (edges); DB decides every fact (availability, price). Model never invents.</text>
+  <text x="60" y="787" class="edge">② Confidence boundary — low confidence clarifies/escalates instead of guessing. Retries only on transient tool failures.</text>
+
+  <!-- PROD NOTE -->
+  <text x="40" y="825" class="lbl" fill="#9c36b5">Production version (say, don't build):</text>
+  <text x="60" y="850" class="prod">• Postgres = node-state checkpoints (resume failed runs)   • Redis = fast lookups on hot data (availability)</text>
+  <text x="60" y="872" class="prod">• Kafka = queue incoming messages under load (don't drop)   • MCP server = clean tool interface, swappable backends</text>
+  <text x="60" y="894" class="prod">"For the build I keep state in-memory — this is where the interesting logic is, not the plumbing."</text>
+
+  <!-- SCOPE CUT -->
+  <text x="40" y="935" class="lbl" fill="#2f9e44">Scope cuts to state up front:</text>
+  <text x="60" y="960" class="note">skip auth · in-memory "DB" as a dict · LLM classifier now (say: swap for trained classifier in prod) · flaky tool stub to show retry</text>
+</svg>

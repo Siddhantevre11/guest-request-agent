@@ -1,0 +1,3 @@
+# Structured memory summary, not raw transcript
+
+Classification needs to know what's already been resolved for a guest (answered questions, pending escalations, offered-but-undecided upsells) so it doesn't re-ask or re-offer. We decided memory stores a structured summary of resolved state, not the raw message transcript. A transcript would force the LLM to re-derive deterministic state (already answered? already declined?) from prose every turn — slower, costlier, and pushes a decision with consequences back onto the LLM instead of deterministic code. In-memory dict for the build; noted as a Postgres/Redis concern for production, same as the rest of the state store.

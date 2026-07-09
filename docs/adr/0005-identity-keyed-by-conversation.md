@@ -1,0 +1,5 @@
+# Identity keyed by (guest_id, conversation_id), platform-bound to one booking
+
+The system must support guests with multiple bookings (returning/overlapping stays), so `guest_id` alone can't identify which reservation a message concerns. Rather than have the LLM disambiguate "which trip do you mean?" from message content — a consequential guess (changing the wrong reservation) that our hard rule forbids the LLM from making — we model identity the way real STR platforms do: each Conversation (message thread) is bound by the platform to exactly one booking before the message reaches the agent. Memory and `lookup_booking` are keyed by `(guest_id, conversation_id)`, and mapping a Conversation to its Booking is a deterministic lookup, not an inference.
+
+Note: the given tool signature is `lookup_booking(guest_id)`. Under this decision the effective key is the conversation's bound booking; for the build the flaky stub can still take `guest_id` where a conversation maps 1:1, but the resolved unit is the Booking behind the Conversation.

@@ -1,0 +1,3 @@
+# Clarify vs. escalate on low-confidence intent
+
+Low confidence on an Intent could mean asking the guest a follow-up ("clarify") or handing off to a human ("escalate") — these have very different costs and are easy to conflate. We decided the choice is driven by intent risk tier, not a single shared low-confidence path: property-question intents clarify (low stakes, cheap to re-ask), while booking-change and upsell intents escalate immediately (a wrong guess has real consequences, so the LLM doesn't get a self-service retry loop on those). If a clarify round-trip comes back still below the confidence bar, it escalates rather than clarifying again indefinitely — clarify is capped at one attempt.
