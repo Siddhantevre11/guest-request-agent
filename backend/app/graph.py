@@ -66,9 +66,13 @@ def build_graph(llm: LLMClient, booking_lookup: BookingLookupFn):
                 if topic not in memory["answered_topics"]:
                     memory["answered_topics"].append(topic)
             elif intent.type == "booking_change" and booking is not None:
-                change = intent.proposed_change or {}
-                date = change.get("date")
-                if date and check_availability(date):
+                # date is always the resolved booking's own checkout date --
+                # never proposed by the LLM, which is never given the booking
+                # and would otherwise have to guess (e.g. "my last day").
+                date = booking["checkout"]
+                change = intent.proposed_change.model_dump(exclude_none=True) if intent.proposed_change else {}
+                change["date"] = date
+                if check_availability(date):
                     create_approval(
                         guest_id=state["guest_id"],
                         conversation_id=state["conversation_id"],

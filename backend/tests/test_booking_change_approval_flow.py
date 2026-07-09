@@ -19,7 +19,7 @@ def test_available_booking_change_creates_pending_approval_and_tells_guest_check
                 type="booking_change",
                 confidence=0.9,
                 query="check out late",
-                proposed_change={"date": "2026-08-05", "new_checkout_time": "13:00", "fee": 25},
+                proposed_change={"new_checkout_time": "13:00", "fee": 25},
             )
         ],
         draft_template="{{fact:0}}",
@@ -49,7 +49,7 @@ def test_unavailable_booking_change_declines_without_creating_an_approval():
                 type="booking_change",
                 confidence=0.9,
                 query="check out late",
-                proposed_change={"date": "2026-09-04", "new_checkout_time": "13:00"},
+                proposed_change={"new_checkout_time": "13:00"},
             )
         ],
         draft_template="{{fact:0}}",
@@ -73,7 +73,7 @@ def test_host_approval_executes_prespecified_diff_and_notifies_guest():
                 type="booking_change",
                 confidence=0.9,
                 query="check out late",
-                proposed_change={"date": "2026-08-05", "new_checkout_time": "13:00", "fee": 25},
+                proposed_change={"new_checkout_time": "13:00", "fee": 25},
             )
         ],
         draft_template="{{fact:0}}",
@@ -106,7 +106,7 @@ def test_host_denial_does_not_mutate_booking():
                 type="booking_change",
                 confidence=0.9,
                 query="check out late",
-                proposed_change={"date": "2026-08-05", "new_checkout_time": "13:00", "fee": 25},
+                proposed_change={"new_checkout_time": "13:00", "fee": 25},
             )
         ],
         draft_template="{{fact:0}}",

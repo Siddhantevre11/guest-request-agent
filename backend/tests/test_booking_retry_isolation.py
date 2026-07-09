@@ -37,7 +37,7 @@ def test_booking_lookup_retried_and_succeeds_within_attempt_budget():
                 type="booking_change",
                 confidence=0.9,
                 query="check out late",
-                proposed_change={"date": "2026-08-05", "new_checkout_time": "13:00"},
+                proposed_change={"new_checkout_time": "13:00"},
             )
         ],
     )

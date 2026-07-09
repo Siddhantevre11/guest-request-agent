@@ -25,6 +25,20 @@ BOOKINGS: Dict[Tuple[str, str], Booking] = {
         "checkout": "2026-10-12",
         "checkout_time": "11:00",
     },
+    # Dedicated to identity-resolution tests: both checkouts are available in
+    # the calendar fixture, so those tests aren't coupled to availability.
+    ("guest-4", "conv-4a"): {
+        "booking_id": "BK-4001",
+        "checkin": "2026-11-01",
+        "checkout": "2026-11-05",
+        "checkout_time": "11:00",
+    },
+    ("guest-4", "conv-4b"): {
+        "booking_id": "BK-4002",
+        "checkin": "2026-11-10",
+        "checkout": "2026-11-14",
+        "checkout_time": "11:00",
+    },
 }
 
 

@@ -8,6 +8,8 @@ CALENDAR: dict[str, bool] = {
     "2026-08-05": True,
     "2026-09-04": False,
     "2026-07-31": True,  # the night before BK-1001's checkin -- a real gap
+    "2026-11-05": True,  # BK-4001's checkout -- identity-test fixture
+    "2026-11-14": True,  # BK-4002's checkout -- identity-test fixture
 }
 
 GAP_NIGHT_PRICE = 120
