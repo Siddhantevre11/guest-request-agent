@@ -7,9 +7,24 @@ Booking = dict
 # to exactly one Booking before a message reaches the agent (ADR-0005). A
 # returning guest with multiple bookings has one entry per conversation_id.
 BOOKINGS: Dict[Tuple[str, str], Booking] = {
-    ("guest-1", "conv-1"): {"booking_id": "BK-1001", "checkin": "2026-08-01", "checkout": "2026-08-05"},
-    ("guest-2", "conv-2a"): {"booking_id": "BK-2001", "checkin": "2026-09-01", "checkout": "2026-09-04"},
-    ("guest-2", "conv-2b"): {"booking_id": "BK-2002", "checkin": "2026-10-10", "checkout": "2026-10-12"},
+    ("guest-1", "conv-1"): {
+        "booking_id": "BK-1001",
+        "checkin": "2026-08-01",
+        "checkout": "2026-08-05",
+        "checkout_time": "11:00",
+    },
+    ("guest-2", "conv-2a"): {
+        "booking_id": "BK-2001",
+        "checkin": "2026-09-01",
+        "checkout": "2026-09-04",
+        "checkout_time": "11:00",
+    },
+    ("guest-2", "conv-2b"): {
+        "booking_id": "BK-2002",
+        "checkin": "2026-10-10",
+        "checkout": "2026-10-12",
+        "checkout_time": "11:00",
+    },
 }
 
 

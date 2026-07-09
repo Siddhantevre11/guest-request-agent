@@ -26,8 +26,9 @@ def test_clear_intent_proceeds_while_ambiguous_intent_is_held_back():
     reply = response.json()["reply"]
     # the clear intent's fact is answered, verbatim from the notes store
     assert "SunnyDays2024!" in reply
-    # the ambiguous intent gets the fixed held-back status line, not an invented answer
-    assert "I'll check with the host about your requested change and get back to you shortly." in reply
+    # the ambiguous consequential intent escalates rather than getting an invented answer
+    assert "flagged this for your host" in reply
+    assert len(client.get("/host/escalations").json()) == 1
 
 
 def test_both_intents_clear_produces_no_held_back_text():
@@ -46,4 +47,4 @@ def test_both_intents_clear_produces_no_held_back_text():
 
     reply = response.json()["reply"]
     assert "SunnyDays2024!" in reply
-    assert "check with the host" not in reply
+    assert "flagged this for your host" not in reply

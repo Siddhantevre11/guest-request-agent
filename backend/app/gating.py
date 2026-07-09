@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from .models import IntentResult
 
@@ -13,20 +13,9 @@ THRESHOLDS: dict[str, float] = {
     "other": 0.5,
 }
 
-# Fixed status line per intent type for held-back (below-threshold) intents.
-# Deterministic and never invented — a real queue/escalation lands in a later
-# slice; for now this proves independent per-intent handling within one reply.
-HELD_BACK_MESSAGES: dict[str, str] = {
-    "property_question": "I'll double check that and get back to you shortly.",
-    "booking_change": "I'll check with the host about your requested change and get back to you shortly.",
-    "upsell": "I'll check on that offer and get back to you shortly.",
-    "affirmation": "Let me confirm what you're referring to before I proceed.",
-    "other": "I'll look into that and get back to you shortly.",
-}
-
-
-# Intent types whose handling requires a resolved Booking.
-BOOKING_DEPENDENT_TYPES = {"booking_change", "upsell"}
+# Intent types whose handling requires a resolved Booking. Affirmation needs
+# it too: converting a "yes" into an Approval needs the booking_id.
+BOOKING_DEPENDENT_TYPES = {"booking_change", "upsell", "affirmation"}
 
 # Fixed status line when the booking lookup fails after the retry budget is
 # exhausted -- only booking-dependent intents are affected; independent
@@ -34,6 +23,49 @@ BOOKING_DEPENDENT_TYPES = {"booking_change", "upsell"}
 BOOKING_FAILURE_MESSAGE = (
     "I'm having trouble pulling up your reservation right now — I've flagged this for your host to confirm."
 )
+
+# Booking-change status lines (ADR-0007): the agent proposes, the host
+# commits -- so the guest reply is always non-committal on approval, and
+# a factually unavailable change is declined immediately without bothering
+# the host at all.
+BOOKING_CHANGE_PENDING_MESSAGE = "I'm checking with your host on that — they'll confirm shortly."
+BOOKING_CHANGE_UNAVAILABLE_MESSAGE = "Unfortunately that time isn't available for your stay."
+
+# Clarify-vs-escalate (ADR-0001): property_question gets one clarify attempt
+# before escalating; consequential types (booking_change, upsell, etc.) never
+# self-clarify -- they escalate immediately, since a wrong guess there has
+# real consequences.
+CLARIFY_QUESTION = "Could you tell me a bit more about what you need?"
+GUEST_ESCALATED_NOTE = "I've flagged this for your host to help with."
+
+# Ambiguous affirmation (ADR-0011): two pending items + a bare "yes" ->
+# clarify once before escalating, rather than guessing which one.
+AMBIGUOUS_AFFIRMATION_QUESTION = "Just to confirm — which one are you saying yes to?"
+
+ESCALATION_REASONS: dict[str, str] = {
+    "booking_change": "Booking-change intent below confidence threshold — needs manual review.",
+    "upsell": "Upsell intent below confidence threshold — needs manual review.",
+    "property_question": "Guest's property question remained unclear after a follow-up — needs manual review.",
+    "affirmation": "Ambiguous affirmation — needs manual review.",
+    "other": "Low-confidence request — needs manual review.",
+}
+
+
+def process_held_back_intent(intent: IntentResult, memory: dict) -> Tuple[str, Optional[str]]:
+    """Return (guest-facing note, escalation reason or None if only clarifying).
+
+    property_question gets exactly one clarify attempt per topic, tracked in
+    memory; a second miss on the same topic escalates instead of looping.
+    """
+    if intent.type == "property_question":
+        attempted = memory.setdefault("clarify_attempted_topics", [])
+        topic = intent.query or ""
+        if topic in attempted:
+            return GUEST_ESCALATED_NOTE, ESCALATION_REASONS["property_question"]
+        attempted.append(topic)
+        return CLARIFY_QUESTION, None
+
+    return GUEST_ESCALATED_NOTE, ESCALATION_REASONS.get(intent.type, ESCALATION_REASONS["other"])
 
 
 def passes_threshold(intent: IntentResult) -> bool:

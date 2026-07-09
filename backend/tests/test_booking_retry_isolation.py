@@ -32,7 +32,14 @@ def test_booking_lookup_retried_and_succeeds_within_attempt_budget():
     lookup = ScriptedBookingLookup([BookingLookupError("transient"), BookingLookupError("transient"), BOOKING])
     client = make_client(
         lookup,
-        intents=[IntentResult(type="booking_change", confidence=0.9, query="check out late")],
+        intents=[
+            IntentResult(
+                type="booking_change",
+                confidence=0.9,
+                query="check out late",
+                proposed_change={"date": "2026-08-05", "new_checkout_time": "13:00"},
+            )
+        ],
     )
 
     response = client.post(
@@ -42,7 +49,8 @@ def test_booking_lookup_retried_and_succeeds_within_attempt_budget():
 
     assert response.status_code == 200
     assert lookup.call_count == 3
-    assert "BK-1001" in response.json()["reply"]
+    assert "checking with your host" in response.json()["reply"].lower()
+    assert client.get("/host/approvals").json()[0]["booking_id"] == "BK-1001"
 
 
 def test_booking_lookup_exhausted_escalates_only_booking_dependent_intent():

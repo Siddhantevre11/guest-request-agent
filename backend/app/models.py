@@ -11,6 +11,7 @@ class IntentResult(BaseModel):
     confidence: float
     sentiment: Sentiment = "neutral"
     query: Optional[str] = None
+    proposed_change: Optional[dict] = None
 
 
 class MessageRequest(BaseModel):

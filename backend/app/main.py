@@ -1,9 +1,32 @@
-from fastapi import FastAPI
+from typing import Literal, Optional
 
-from .bookings import BookingLookup
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+
+from .approvals import get_approval, list_pending_approvals
+from .bookings import BOOKINGS, BookingLookup
+from .escalations import list_escalations
 from .graph import BookingLookupFn, build_graph
 from .llm import LLMClient
 from .models import MessageRequest, MessageResponse
+
+
+class HostDecisionRequest(BaseModel):
+    approval_id: str
+    decision: Literal["approve", "deny"]
+
+
+class HostDecisionResponse(BaseModel):
+    status: Literal["approved", "denied"]
+    guest_notification: str
+    booking: Optional[dict] = None
+
+
+def _guest_notification_for_approval(change: dict) -> str:
+    parts = [f"Great news — your checkout has been extended to {change['new_checkout_time']}"]
+    if change.get("fee"):
+        parts.append(f" for a ${change['fee']} fee")
+    return "".join(parts) + "."
 
 
 def create_app(llm_client: LLMClient, booking_lookup: BookingLookupFn | None = None) -> FastAPI:
@@ -25,5 +48,44 @@ def create_app(llm_client: LLMClient, booking_lookup: BookingLookupFn | None = N
             }
         )
         return MessageResponse(reply=result["reply"])
+
+    @app.get("/host/approvals")
+    def get_approvals() -> list:
+        return list_pending_approvals()
+
+    @app.get("/host/escalations")
+    def get_escalations() -> list:
+        return list_escalations()
+
+    @app.post("/host/decision", response_model=HostDecisionResponse)
+    def post_host_decision(req: HostDecisionRequest) -> HostDecisionResponse:
+        approval = get_approval(req.approval_id)
+        if approval is None:
+            raise HTTPException(status_code=404, detail="approval not found")
+
+        if req.decision == "deny":
+            approval["status"] = "denied"
+            return HostDecisionResponse(
+                status="denied",
+                guest_notification="Unfortunately your host couldn't accommodate this change this time.",
+                booking=None,
+            )
+
+        # Approve: execute the pre-specified diff deterministically -- never
+        # re-enters the LLM (ADR-0012).
+        booking_key = (approval["guest_id"], approval["conversation_id"])
+        booking = BOOKINGS[booking_key]
+        change = approval["change"]
+        if "new_checkout_time" in change:
+            booking["checkout_time"] = change["new_checkout_time"]
+        if "fee" in change:
+            booking["fee"] = change["fee"]
+        approval["status"] = "approved"
+
+        return HostDecisionResponse(
+            status="approved",
+            guest_notification=_guest_notification_for_approval(change),
+            booking=dict(booking),
+        )
 
     return app
