@@ -9,6 +9,7 @@ from .escalations import list_escalations
 from .graph import BookingLookupFn, build_graph
 from .llm import LLMClient
 from .models import MessageRequest, MessageResponse
+from .notifications import add_notification, pop_notifications
 
 
 class HostDecisionRequest(BaseModel):
@@ -65,11 +66,9 @@ def create_app(llm_client: LLMClient, booking_lookup: BookingLookupFn | None = N
 
         if req.decision == "deny":
             approval["status"] = "denied"
-            return HostDecisionResponse(
-                status="denied",
-                guest_notification="Unfortunately your host couldn't accommodate this change this time.",
-                booking=None,
-            )
+            notification = "Unfortunately your host couldn't accommodate this change this time."
+            add_notification(approval["guest_id"], approval["conversation_id"], notification)
+            return HostDecisionResponse(status="denied", guest_notification=notification, booking=None)
 
         # Approve: execute the pre-specified diff deterministically -- never
         # re-enters the LLM (ADR-0012).
@@ -82,10 +81,13 @@ def create_app(llm_client: LLMClient, booking_lookup: BookingLookupFn | None = N
             booking["fee"] = change["fee"]
         approval["status"] = "approved"
 
-        return HostDecisionResponse(
-            status="approved",
-            guest_notification=_guest_notification_for_approval(change),
-            booking=dict(booking),
-        )
+        notification = _guest_notification_for_approval(change)
+        add_notification(approval["guest_id"], approval["conversation_id"], notification)
+
+        return HostDecisionResponse(status="approved", guest_notification=notification, booking=dict(booking))
+
+    @app.get("/notifications")
+    def get_notifications(guest_id: str, conversation_id: str) -> list:
+        return pop_notifications(guest_id, conversation_id)
 
     return app
