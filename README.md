@@ -17,7 +17,7 @@ An agent that reads inbound short-term-rental guest messages, figures out what e
 ```
 cd backend
 .venv/Scripts/python.exe -m pip install -r requirements.txt   # first time
-.venv/Scripts/python.exe -m pytest                             # 25 tests
+.venv/Scripts/python.exe -m pytest                             # 30 tests
 export OPENAI_API_KEY=sk-...                                   # real classify()/draft() calls
 .venv/Scripts/python.exe -m uvicorn app.server:app --reload
 ```
@@ -31,7 +31,7 @@ cd frontend
 npm install       # first time
 cp .env.example .env.local   # BACKEND_URL, defaults to http://localhost:8000
 npm run dev
-npm test          # vitest, 7 tests
+npm test          # vitest, 11 tests
 ```
 
 ## Docs
